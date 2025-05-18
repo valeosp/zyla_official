@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "316406388592",
+    "project_id": "zyla-534c8",
+    "storage_bucket": "zyla-534c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316406388592:android:a26a2e2b10953174c4a1b5",
+        "android_client_info": {
+          "package_name": "com.example.zyla"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgXpMc5O7T4kHShfVXh4JyCNdnRz2cEDM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316406388592:android:bbadc1f4a99ee639c4a1b5",
+        "android_client_info": {
+          "package_name": "zyla.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgXpMc5O7T4kHShfVXh4JyCNdnRz2cEDM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
