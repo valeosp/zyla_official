@@ -1,10 +1,10 @@
-//lib/screens/auth/login_screen.dart
+// lib/screens/auth/login_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
-import '../onboarding/onboarding_screen.dart';
-import 'register_screen.dart';
+import '../../providers/onboarding_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,12 +29,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
 
+    // En cuanto cambie a authenticated, disparo el flujo de post-login:
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (authProvider.status == Status.authenticated) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-        );
+      if (authProvider.status == Status.authenticated &&
+          authProvider.user != null) {
+        _handlePostLogin();
       }
     });
 
@@ -122,10 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                    );
+                    Navigator.pushNamed(context, '/register');
                   },
                   child: const Text('¿No tienes cuenta? Regístrate'),
                 ),
@@ -135,5 +131,17 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  /// Carga el estado de onboarding y redirige a la pantalla correcta
+  Future<void> _handlePostLogin() async {
+    final uid = context.read<AuthProvider>().user!.uid;
+    final onbProv = context.read<OnboardingProvider>();
+    await onbProv.loadStatus(uid);
+    if (onbProv.completed) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/onboarding');
+    }
   }
 }

@@ -23,18 +23,17 @@ import 'screens/profile/profile_screen.dart';
 import 'screens/profile/partner_view_screen.dart';
 
 // Menstrual widget screens
-import 'package:zyla/menstrual/phase_view_screen.dart';
-import 'package:zyla/menstrual/calendar_view_screen.dart';
-import 'package:zyla/menstrual/log_period_screen.dart';
+import 'package:zyla/menstrual/calendar_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('es_CO', null);
 
+  // Inicializa el widget (usa tus claves de 32 y 16 caracteres)
   MenstrualCycleWidget.init(
-    secretKey: 'a-32-character-secret-key-here',
-    ivKey: 'a-16-char-iv-key',
+    secretKey: 'TU_SECRET_KEY_DE_32_CARACTERES',
+    ivKey: 'TU_IV_KEY_DE_16_CARACTERES',
   );
 
   runApp(const ZylaApp());
@@ -76,9 +75,8 @@ class ZylaApp extends StatelessWidget {
               (ctx) => PartnerViewScreen(
                 partnerUid: ModalRoute.of(ctx)!.settings.arguments as String,
               ),
-          '/menstrual/phase': (_) => const PhaseViewScreen(),
-          '/menstrual/calendar': (_) => const CalendarViewScreen(),
-          '/menstrual/log': (_) => const LogPeriodScreen(),
+
+          '/menstrual/calendar': (_) => const CalendarScreen(),
         },
       ),
     );

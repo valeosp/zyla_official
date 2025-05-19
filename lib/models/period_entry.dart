@@ -5,12 +5,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class PeriodEntry {
   String? id;
 
-  /// Solo fecha (año, mes, día) sin componente horario para evitar desfases
-  DateTime date;
-  String flow;
-  List<String> mood;
-  List<String> symptoms;
-  List<String> sexualActivity;
+  /// Fecha normalizada (sin hora) para evitar desfases de zona horaria
+  final DateTime date;
+
+  /// Flujo menstrual: "Ligero", "Normal", "Abundante"
+  final String flow;
+
+  /// Estado de ánimo seleccionado(s)
+  final List<String> mood;
+
+  /// Síntomas seleccionados
+  final List<String> symptoms;
+
+  /// Actividad sexual registrada
+  final List<String> sexualActivity;
 
   PeriodEntry({
     this.id,
@@ -21,26 +29,25 @@ class PeriodEntry {
     required this.sexualActivity,
   });
 
-  /// Construye desde datos de Firestore normalizando la fecha
+  /// Construye una instancia desde Firestore
   factory PeriodEntry.fromMap(String id, Map<String, dynamic> data) {
-    final ts = data['date'] as Timestamp;
+    final Timestamp ts = data['date'];
     final dt = ts.toDate();
-    // Normalizar para evitar desfase de zona horaria
     final normalizedDate = DateTime(dt.year, dt.month, dt.day);
+
     return PeriodEntry(
       id: id,
       date: normalizedDate,
-      flow: data['flow'] as String,
+      flow: data['flow'] as String? ?? 'Normal',
       mood: List<String>.from(data['mood'] ?? []),
       symptoms: List<String>.from(data['symptoms'] ?? []),
       sexualActivity: List<String>.from(data['sexualActivity'] ?? []),
     );
   }
 
-  /// Convierte a mapa para Firestore, guardando solo fecha
+  /// Convierte la entrada a un mapa compatible con Firestore
   Map<String, dynamic> toMap() {
-    final d = date;
-    final normalized = DateTime(d.year, d.month, d.day);
+    final normalized = DateTime(date.year, date.month, date.day);
     return {
       'date': Timestamp.fromDate(normalized),
       'flow': flow,

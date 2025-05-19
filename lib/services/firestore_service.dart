@@ -1,6 +1,11 @@
+// lib/services/firestore_service.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/onboarding_data.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:menstrual_cycle_widget/menstrual_cycle_widget.dart';
+
+import '../models/onboarding_data.dart';
 import '../models/period_entry.dart';
 
 class FirestoreService {
@@ -30,7 +35,8 @@ class FirestoreService {
         .collection('users')
         .doc(uid)
         .collection('period_entries')
-        .doc(entry.date.toIso8601String());
+        .doc(entry.id ?? entry.date.toIso8601String());
+
     await docRef.set(entry.toMap());
   }
 
@@ -60,5 +66,48 @@ class FirestoreService {
         .collection('period_entries')
         .doc(entryId)
         .delete();
+  }
+
+  /// Recupera las entradas de periodo una sola vez (no en tiempo real)
+  Future<List<PeriodEntry>> getPeriodEntries() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    final snapshot =
+        await _db
+            .collection('users')
+            .doc(uid)
+            .collection('period_entries')
+            .orderBy('date', descending: true)
+            .get();
+
+    return snapshot.docs
+        .map((doc) => PeriodEntry.fromMap(doc.id, doc.data()))
+        .toList();
+  }
+
+  /// Sincroniza los datos que entrega el widget de calendario
+  Future<void> syncCalendarData(dynamic data) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    debugPrint('SyncCalendarData recibido: $data');
+
+    final periodDates = (data.periodDates as List<DateTime>?) ?? [];
+
+    for (final date in periodDates) {
+      final entry = PeriodEntry(
+        date: date,
+        flow: 'Normal', // Puedes ajustar si `data.flowMap` está disponible
+        mood: [], // Puedes usar `data.moodMap[date]` si existe
+        symptoms: [],
+        sexualActivity: [],
+      );
+
+      final docRef = _db
+          .collection('users')
+          .doc(uid)
+          .collection('period_entries')
+          .doc(date.toIso8601String());
+
+      await docRef.set(entry.toMap());
+    }
   }
 }
