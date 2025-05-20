@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/tip.dart';
-import '../../data/tips_data.dart';
-import 'tip_detail_screen.dart';
+import 'package:zyla/models/tip.dart';
+import 'package:zyla/services/firestore_service.dart';
 
 class TipsScreen extends StatefulWidget {
   const TipsScreen({super.key});
@@ -11,133 +10,166 @@ class TipsScreen extends StatefulWidget {
 }
 
 class _TipsScreenState extends State<TipsScreen> {
-  String _selectedCategory = 'Sexualidad';
-  String _searchQuery = '';
+  final FirestoreService firestoreService = FirestoreService();
+  String selectedCategory = 'Todas';
+  String searchQuery = '';
+
+  final Map<String, String> categoryEmojis = {
+    'Todas': '🌈',
+    'psicológica': '🧠',
+    'sexualidad': '❤️‍🔥',
+    'salud íntima': '🌸',
+  };
+
+  final Map<String, Color> categoryColors = {
+    'Todas': const Color(0xFFFFF0F5),
+    'psicológica': const Color(0xFFF0F8FF),
+    'sexualidad': const Color(0xFFFFF5EE),
+    'salud íntima': const Color(0xFFF5FFFA),
+  };
+
+  final Map<String, Color> selectedCategoryColors = {
+    'Todas': const Color(0xFFFFB6C1),
+    'psicológica': const Color(0xFFDDA0DD),
+    'sexualidad': const Color(0xFFFFA07A),
+    'salud íntima': const Color(0xFF98FB98),
+  };
 
   @override
   Widget build(BuildContext context) {
-    final filtered =
-        tipsList.where((tip) {
-          final matchesCategory = tip.category == _selectedCategory;
-          final matchesSearch = tip.title.toLowerCase().contains(
-            _searchQuery.toLowerCase(),
-          );
-          return matchesCategory && matchesSearch;
-        }).toList();
-
     return Scaffold(
+      backgroundColor: const Color(0xFFFDFDFD),
       appBar: AppBar(
-        title: const Text(
-          'Consejos',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        backgroundColor: const Color(0xFFFFFAFA),
         elevation: 0,
-        backgroundColor: Colors.pink[50],
-        foregroundColor: Colors.pink[800],
         centerTitle: true,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.pink[50]!, Colors.white],
+        toolbarHeight: 60,
+        title: const Text(
+          'Consejos para ti',
+          style: TextStyle(
+            color: Color(0xFF2D2D2D),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.3,
           ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
+        iconTheme: const IconThemeData(color: Color(0xFF666666)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFF0F0F0)),
+        ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            color: const Color(0xFFFFFAFA),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Barra de búsqueda
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Buscar consejos...',
-                    hintStyle: TextStyle(color: Colors.pink[300]),
-                    prefixIcon: Icon(Icons.search, color: Colors.pink[400]),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide(
-                        color: Colors.pink[100]!,
+                // 🔍 Buscador
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFFB6C1).withOpacity(0.3),
                         width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFB6C1).withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide(
-                        color: Colors.pink[300]!,
-                        width: 2,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Busca consejos...',
+                        hintStyle: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 14,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          color: Colors.grey[400],
+                          size: 20,
+                        ),
+                        filled: false,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        border: InputBorder.none,
                       ),
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value.toLowerCase();
+                        });
+                      },
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  style: TextStyle(color: Colors.pink[800]),
                 ),
-                const SizedBox(height: 16),
 
-                // Filtros de categoría (horizontal scrollable para responsive)
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                // 🧠 Filtro de Categorías
+                SizedBox(
+                  height: 50,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     children:
-                        ['Sexualidad', 'Salud Mental', 'Salud Íntima'].map((
-                          cat,
-                        ) {
-                          final isSelected = _selectedCategory == cat;
+                        categoryEmojis.entries.map((entry) {
+                          final isSelected = selectedCategory == entry.key;
                           return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              child: ElevatedButton(
-                                onPressed:
-                                    () =>
-                                        setState(() => _selectedCategory = cat),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      isSelected ? Colors.pink : Colors.white,
-                                  elevation: isSelected ? 5 : 1,
-                                  shadowColor:
-                                      isSelected
-                                          ? Colors.pink[300]
-                                          : Colors.grey[300],
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    side: BorderSide(
-                                      color:
-                                          isSelected
-                                              ? Colors.pink
-                                              : Colors.pink[100]!,
-                                      width: isSelected ? 2 : 1,
-                                    ),
-                                  ),
+                            padding: const EdgeInsets.only(right: 8),
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedCategory = entry.key;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
                                 ),
-                                child: Text(
-                                  cat,
-                                  style: TextStyle(
+                                decoration: BoxDecoration(
+                                  color:
+                                      isSelected
+                                          ? selectedCategoryColors[entry.key]
+                                          : categoryColors[entry.key],
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
                                     color:
                                         isSelected
-                                            ? Colors.white
-                                            : Colors.pink[700],
-                                    fontWeight:
-                                        isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
+                                            ? selectedCategoryColors[entry.key]!
+                                            : const Color(
+                                              0xFFFFB6C1,
+                                            ).withOpacity(0.3),
+                                    width: 1,
                                   ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      entry.value,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      entry.key,
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : const Color(0xFF666666),
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -145,187 +177,470 @@ class _TipsScreenState extends State<TipsScreen> {
                         }).toList(),
                   ),
                 ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
 
-                const SizedBox(height: 16),
+          // 📡 StreamBuilder
+          Expanded(
+            child: StreamBuilder<List<Tip>>(
+              stream: firestoreService.streamTips(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFFFFB6C1),
+                      ),
+                    ),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text('Error al cargar los consejos'),
+                  );
+                }
 
-                // Título de resultados
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4.0,
-                    vertical: 8.0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Resultados: ${filtered.length}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.pink[800],
+                var tips = snapshot.data ?? [];
+
+                // 🔍 Filtro de búsqueda y categoría
+                tips =
+                    tips.where((tip) {
+                      final matchesSearch =
+                          tip.title.toLowerCase().contains(searchQuery) ||
+                          tip.description.toLowerCase().contains(searchQuery);
+                      final matchesCategory =
+                          selectedCategory == 'Todas' ||
+                          tip.category.toLowerCase() ==
+                              selectedCategory.toLowerCase();
+                      return matchesSearch && matchesCategory;
+                    }).toList();
+
+                if (tips.isEmpty) {
+                  return const Center(
+                    child: Text('No se encontraron consejos.'),
+                  );
+                }
+
+                // Si una categoría específica está seleccionada, mostrar lista vertical
+                if (selectedCategory != 'Todas') {
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: tips.length,
+                    itemBuilder: (context, index) {
+                      final tip = tips[index];
+                      return GestureDetector(
+                        onTap: () => _showTipDetails(tip),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Imagen
+                              Container(
+                                height: 180,
+                                width: double.infinity,
+                                decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16),
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16),
+                                  ),
+                                  child: Image.network(
+                                    tip.imageUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                              colors: [
+                                                const Color(0xFFFFB6C1),
+                                                const Color(0xFFDDA0DD),
+                                              ],
+                                            ),
+                                          ),
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.lightbulb_outline_rounded,
+                                              size: 40,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                  ),
+                                ),
+                              ),
+                              // Contenido
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Text(
+                                  tip.title,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF2D2D2D),
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+
+                // Cuando 'Todas' está seleccionada, agrupar tips por categoría
+                final groupedTips = <String, List<Tip>>{};
+                for (final tip in tips) {
+                  if (!groupedTips.containsKey(tip.category)) {
+                    groupedTips[tip.category] = [];
+                  }
+                  groupedTips[tip.category]!.add(tip);
+                }
+
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children:
+                      groupedTips.entries.map((entry) {
+                        final category = entry.key;
+                        final categoryTips = entry.value;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Título de la sección
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Text(
+                                category.toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF2D2D2D),
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+
+                            // Lista horizontal de tips
+                            SizedBox(
+                              height: 220,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: categoryTips.length,
+                                itemBuilder: (context, index) {
+                                  final tip = categoryTips[index];
+                                  return GestureDetector(
+                                    onTap: () => _showTipDetails(tip),
+                                    child: Container(
+                                      width: 280,
+                                      height: 220,
+                                      margin: EdgeInsets.only(
+                                        right:
+                                            index < categoryTips.length - 1
+                                                ? 16
+                                                : 0,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.05,
+                                            ),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Imagen
+                                          Container(
+                                            height: 140,
+                                            width: double.infinity,
+                                            decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(16),
+                                                topRight: Radius.circular(16),
+                                              ),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                    topLeft: Radius.circular(
+                                                      16,
+                                                    ),
+                                                    topRight: Radius.circular(
+                                                      16,
+                                                    ),
+                                                  ),
+                                              child: Image.network(
+                                                tip.imageUrl,
+                                                fit: BoxFit.cover,
+                                                errorBuilder:
+                                                    (_, __, ___) => Container(
+                                                      decoration: BoxDecoration(
+                                                        gradient: LinearGradient(
+                                                          begin:
+                                                              Alignment.topLeft,
+                                                          end:
+                                                              Alignment
+                                                                  .bottomRight,
+                                                          colors: [
+                                                            const Color(
+                                                              0xFFFFB6C1,
+                                                            ),
+                                                            const Color(
+                                                              0xFFDDA0DD,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      child: const Center(
+                                                        child: Icon(
+                                                          Icons
+                                                              .lightbulb_outline_rounded,
+                                                          size: 40,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+
+                                          // Contenido
+                                          Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Text(
+                                              tip.title,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF2D2D2D),
+                                                height: 1.2,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+                          ],
+                        );
+                      }).toList(),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🎯 Mostrar detalles en modal
+  void _showTipDetails(Tip tip) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (_, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Indicador de arrastre
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 12),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      Icon(Icons.tune, color: Colors.pink[400], size: 20),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Título
+                          Text(
+                            tip.title,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF2D2D2D),
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
 
-                // Lista de cards
-                Expanded(
-                  child:
-                      filtered.isEmpty
-                          ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                          // Categoría
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  categoryColors[tip.category] ??
+                                  const Color(0xFFFFF0F5),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: (selectedCategoryColors[tip.category] ??
+                                        const Color(0xFFFFB6C1))
+                                    .withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 48,
-                                  color: Colors.pink[200],
+                                Text(
+                                  categoryEmojis[tip.category] ?? '💡',
+                                  style: const TextStyle(fontSize: 14),
                                 ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'No se encontraron consejos',
+                                const SizedBox(width: 6),
+                                Text(
+                                  tip.category,
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        selectedCategoryColors[tip.category] ??
+                                        const Color(0xFFFFB6C1),
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                          : ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.only(bottom: 16),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final tip = filtered[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.2),
-                                      spreadRadius: 1,
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  color: Colors.white,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(20),
-                                    onTap:
-                                        () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (_) =>
-                                                    TipDetailScreen(tip: tip),
-                                          ),
-                                        ),
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        // Para hacerlo responsive
-                                        final isSmallScreen =
-                                            constraints.maxWidth < 300;
-
-                                        return Row(
-                                          children: [
-                                            Hero(
-                                              tag: 'tip_image_${tip.title}',
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    const BorderRadius.horizontal(
-                                                      left: Radius.circular(20),
-                                                    ),
-                                                child: Image.asset(
-                                                  tip.imageUrl,
-                                                  width:
-                                                      isSmallScreen ? 80 : 110,
-                                                  height: 110,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Padding(
-                                                padding: EdgeInsets.all(
-                                                  isSmallScreen ? 8.0 : 16.0,
-                                                ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      tip.title,
-                                                      style: TextStyle(
-                                                        fontSize:
-                                                            isSmallScreen
-                                                                ? 14
-                                                                : 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.pink[800],
-                                                      ),
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      tip.category,
-                                                      style: TextStyle(
-                                                        fontSize:
-                                                            isSmallScreen
-                                                                ? 12
-                                                                : 13,
-                                                        color: Colors.grey[600],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: CircleAvatar(
-                                                backgroundColor:
-                                                    Colors.pink[50],
-                                                radius: 16,
-                                                child: Icon(
-                                                  Icons.arrow_forward_ios,
-                                                  size: 12,
-                                                  color: Colors.pink[400],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
                           ),
+                          const SizedBox(height: 20),
+
+                          // Imagen
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.network(
+                                tip.imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) => Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            const Color(0xFFFFB6C1),
+                                            const Color(0xFFDDA0DD),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.lightbulb_outline_rounded,
+                                          size: 60,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Descripción
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFAFA),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFFFB6C1).withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              tip.description,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                height: 1.5,
+                                color: Color(0xFF424242),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

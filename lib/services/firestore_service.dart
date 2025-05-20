@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:menstrual_cycle_widget/menstrual_cycle_widget.dart';
-
+import 'package:zyla/models/tip.dart';
 import '../models/onboarding_data.dart';
 import '../models/period_entry.dart';
 
@@ -55,6 +55,12 @@ class FirestoreService {
                   .map((doc) => PeriodEntry.fromMap(doc.id, doc.data()))
                   .toList(),
         );
+  }
+
+  Stream<List<Tip>> streamTips() {
+    return _db.collection('tips').snapshots().map((snap) {
+      return snap.docs.map((doc) => Tip.fromMap(doc.id, doc.data())).toList();
+    });
   }
 
   /// Elimina una entrada de periodo

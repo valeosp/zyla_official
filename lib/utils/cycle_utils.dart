@@ -9,10 +9,10 @@ Color colorForPhase(String phase) {
     case 'ovulación':
       return const Color(0xFF8E24AA);
     case 'fértil':
-      return const Color(0xFF66BB6A);
+      return const Color.fromARGB(255, 119, 232, 255);
     case 'folicular':
     default:
-      return const Color(0xFFE1F5FE);
+      return const Color.fromARGB(203, 158, 158, 158);
   }
 }
 

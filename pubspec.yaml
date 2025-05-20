@@ -54,7 +54,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   iconsax: ^0.0.8
   percent_indicator: ^4.2.2
-  flutter_animate: ^4.5.0
+  flutter_animate: ^4.5.2
   flutter_slidable: ^3.0.0
 
 dev_dependencies:

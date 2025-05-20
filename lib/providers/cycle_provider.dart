@@ -90,7 +90,7 @@ class CycleProvider with ChangeNotifier {
   void _computePredictions() {
     if (lastPeriodDate == null) {
       nextPeriodDate = null;
-      ovulationDate = lastPeriodDate!.add(Duration(days: cycleLength ~/ 2));
+      ovulationDate = null;
       fertileWindow = [];
       return;
     }

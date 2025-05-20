@@ -22,8 +22,9 @@ import 'screens/tips/tips_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/profile/partner_view_screen.dart';
 
-// Menstrual widget screens
+// widget screens
 import 'package:zyla/menstrual/calendar_screen.dart';
+import 'widgets/initial_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,13 +64,13 @@ class ZylaApp extends StatelessWidget {
         ],
         initialRoute: '/',
         routes: {
-          '/': (_) => const WelcomeScreen(),
+          '/': (_) => const InitialLoader(),
           '/login': (_) => const LoginScreen(),
           '/register': (_) => const RegisterScreen(),
           '/onboarding': (_) => const OnboardingScreen(),
           '/home': (_) => const HomeScreen(),
           '/history': (_) => const HistoryScreen(),
-          '/tips': (_) => const TipsScreen(),
+          '/tips': (_) => TipsScreen(),
           '/profile': (_) => const ProfileScreen(),
           '/partner':
               (ctx) => PartnerViewScreen(
