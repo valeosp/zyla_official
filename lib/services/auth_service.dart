@@ -1,32 +1,34 @@
-//lib/services/auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Registra un usuario y le envía correo de verificación
+  // Nuevo getter para recuperar currentUser
+  User? get currentUser => _auth.currentUser;
+
+  // Registro y envío automático de verificación
   Future<User?> signUp(String email, String password) async {
-    final credential = await _auth.createUserWithEmailAndPassword(
+    final cred = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-    await credential.user!.sendEmailVerification();
-    return credential.user;
+    await cred.user!.sendEmailVerification();
+    return cred.user;
   }
 
-  // Inicia sesión con email/clave
+  // Inicio de sesión
   Future<User?> signIn(String email, String password) async {
-    final credential = await _auth.signInWithEmailAndPassword(
+    final cred = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
-    return credential.user;
+    return cred.user;
   }
 
-  // Cierra sesión
-  Future<void> signOut() => _auth.signOut();
+  // Stream de cambios de estado
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Reenvía correo de verificación
+  // Reenvío de verificación
   Future<void> sendEmailVerification() async {
     final user = _auth.currentUser;
     if (user != null && !user.emailVerified) {
@@ -34,14 +36,10 @@ class AuthService {
     }
   }
 
-  // Stream de cambios en el estado de autenticación
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  // Cierre de sesión
+  Future<void> signOut() => _auth.signOut();
 
-  // Usuario actual
-  User? get currentUser => _auth.currentUser;
-
-  /// Cambia la contraseña del usuario actual
-  /// Requiere la contraseña actual para reautenticación
+  // Cambio de contraseña (igual que antes)
   Future<void> changePassword(
     String currentPassword,
     String newPassword,
@@ -53,15 +51,11 @@ class AuthService {
         message: 'No hay usuario autenticado.',
       );
     }
-    // Creamos credenciales para reautenticar
     final cred = EmailAuthProvider.credential(
       email: user.email!,
       password: currentPassword,
     );
-    // Reautenticamos
     await user.reauthenticateWithCredential(cred);
-    // Actualizamos la contraseña
     await user.updatePassword(newPassword);
-    // Opcional: cerrar sesión en otros dispositivos
   }
 }

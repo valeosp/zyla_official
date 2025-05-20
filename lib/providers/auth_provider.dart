@@ -1,10 +1,14 @@
-// lib/providers/auth_provider.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 
-enum Status { uninitialized, authenticating, authenticated, unauthenticated }
+enum Status {
+  uninitialized,
+  authenticating,
+  authenticated,
+  unauthenticated,
+  emailUnverified, // Nuevo estado para usuarios pendientes de verificar
+}
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -14,23 +18,23 @@ class AuthProvider with ChangeNotifier {
   String? errorMessage;
 
   AuthProvider() {
-    // Escucha cambios en el estado de autenticación
+    // Escucha cambios de autenticación
     _authService.authStateChanges.listen(_onAuthStateChanged);
   }
 
   Status get status => _status;
   User? get user => _user;
 
-  /// Registro con envío automático de correo de verificación
+  /// Registro + envío de verificación
   Future<void> registerWithEmail(String email, String password) async {
     _status = Status.authenticating;
+    errorMessage = null;
     notifyListeners();
     try {
       final newUser = await _authService.signUp(email, password);
       _user = newUser;
-      // Enviar correo de verificación
-      await _authService.sendEmailVerification();
-      _status = Status.unauthenticated; // Hasta que confirme su correo
+      // Marcamos como pendiente de verificación
+      _status = Status.emailUnverified;
     } on FirebaseAuthException catch (e) {
       errorMessage = e.message;
       _status = Status.unauthenticated;
@@ -38,18 +42,20 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Login y validación de verificación de correo
+  /// Login + chequeo de emailVerified
   Future<void> loginWithEmail(String email, String password) async {
     _status = Status.authenticating;
+    errorMessage = null;
     notifyListeners();
     try {
       final loggedUser = await _authService.signIn(email, password);
-      if (loggedUser != null && loggedUser.emailVerified) {
-        _user = loggedUser;
+      _user = loggedUser;
+      if (_user != null && _user!.emailVerified) {
         _status = Status.authenticated;
       } else {
-        errorMessage = 'Por favor, verifica tu correo electrónico.';
-        _status = Status.unauthenticated;
+        // reenviamos verificación si no está verificado
+        await _authService.sendEmailVerification();
+        _status = Status.emailUnverified;
       }
     } on FirebaseAuthException catch (e) {
       errorMessage = e.message;
@@ -58,10 +64,22 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Reenvío manual de correo de verificación
+  /// Reenvía el correo de verificación
   Future<void> sendEmailVerification() async {
     if (_user != null && !_user!.emailVerified) {
       await _authService.sendEmailVerification();
+    }
+  }
+
+  /// Fuerza recarga del usuario para detectar verificación
+  Future<void> reloadUser() async {
+    if (_user == null) return;
+    await _authService.currentUser!.reload();
+    final refreshed = _authService.currentUser;
+    if (refreshed != null && refreshed.emailVerified) {
+      _user = refreshed;
+      _status = Status.authenticated;
+      notifyListeners();
     }
   }
 
@@ -85,7 +103,6 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cerrar sesión
   Future<void> signOut() async {
     await _authService.signOut();
     _user = null;
@@ -93,11 +110,13 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Handler interno de cambios en el estado de FirebaseAuth
   void _onAuthStateChanged(User? firebaseUser) {
-    if (firebaseUser == null || !firebaseUser.emailVerified) {
-      _user = firebaseUser;
+    if (firebaseUser == null) {
+      _user = null;
       _status = Status.unauthenticated;
+    } else if (!firebaseUser.emailVerified) {
+      _user = firebaseUser;
+      _status = Status.emailUnverified;
     } else {
       _user = firebaseUser;
       _status = Status.authenticated;

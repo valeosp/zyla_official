@@ -180,7 +180,6 @@ class _CustomCycleProgressState extends State<CustomCycleProgress>
     final isMultipleOfFive =
         segment.day % 5 == 0; // Mostrar solo múltiplos de 5 por limpieza visual
 
-    // Para hacerlo más minimalista, solo mostramos algunos números de días
     if (!isToday && !isMultipleOfFive && segment.day != 1) {
       return Container(
         width: 4,
@@ -374,7 +373,7 @@ class _CustomCycleProgressState extends State<CustomCycleProgress>
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(156, 154, 255, 223),
+                color: const Color.fromARGB(232, 254, 253, 236),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: nextPhaseColor.withOpacity(0.15),

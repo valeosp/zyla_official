@@ -1,3 +1,4 @@
+// lib/providers/user_data_provider.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +8,7 @@ class UserDataProvider with ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   OnboardingData _onboardingData = OnboardingData();
+  String? _displayName;
   String? _photoUrl;
   String? _email;
 
@@ -15,6 +17,7 @@ class UserDataProvider with ChangeNotifier {
   }
 
   OnboardingData get onboardingData => _onboardingData;
+  String? get displayName => _displayName;
   String? get photoUrl => _photoUrl;
   String? get email => _email;
 
@@ -24,6 +27,7 @@ class UserDataProvider with ChangeNotifier {
     _db.collection('users').doc(uid).snapshots().listen((snap) {
       if (!snap.exists) return;
       final data = snap.data()!;
+      _displayName = data['displayName'] as String?;
       _onboardingData = OnboardingData(
         birthYear: data['birthYear'] as int?,
         trackingReason: data['trackingReason'] as String?,

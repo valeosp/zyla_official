@@ -6,6 +6,7 @@ import 'package:zyla/providers/cycle_provider.dart';
 import 'package:zyla/utils/cycle_utils.dart';
 import 'package:zyla/services/firestore_service.dart';
 import 'package:zyla/models/tip.dart';
+import 'package:zyla/providers/user_data_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -62,7 +63,7 @@ class HomeScreen extends StatelessWidget {
     final firestoreService = FirestoreService();
     final now = DateTime.now();
 
-    const displayName = 'Usuario';
+    final name = context.watch<UserDataProvider>().displayName;
 
     int currentDay = 0;
     if (cycle.lastPeriodDate != null) {
@@ -212,7 +213,7 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                                  '¡Hola, $displayName!',
+                                  '¡Hola, $name!',
                                   style: TextStyle(
                                     fontSize: 28,
                                     fontWeight: FontWeight.w600,

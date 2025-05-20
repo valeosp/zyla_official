@@ -1,3 +1,4 @@
+// lib/providers/onboarding_provider.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/onboarding_data.dart';
@@ -68,6 +69,11 @@ class OnboardingProvider with ChangeNotifier {
 
   void setPeriodLength(int days) {
     _data.periodLength = days;
+    notifyListeners();
+  }
+
+  void setDisplayName(String name) {
+    _data.displayName = name;
     notifyListeners();
   }
 

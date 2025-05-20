@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -20,7 +21,7 @@ import 'screens/home/home_screen.dart';
 import 'screens/history/history_screen.dart';
 import 'screens/tips/tips_screen.dart';
 import 'screens/profile/profile_screen.dart';
-import 'screens/profile/partner_view_screen.dart';
+import 'screens/auth/email_verification_screen.dart';
 
 // widget screens
 import 'package:zyla/menstrual/calendar_screen.dart';
@@ -65,17 +66,15 @@ class ZylaApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (_) => const InitialLoader(),
+          '/welcome': (_) => const WelcomeScreen(),
           '/login': (_) => const LoginScreen(),
           '/register': (_) => const RegisterScreen(),
+          '/verify-email': (_) => const EmailVerificationScreen(),
           '/onboarding': (_) => const OnboardingScreen(),
           '/home': (_) => const HomeScreen(),
           '/history': (_) => const HistoryScreen(),
           '/tips': (_) => TipsScreen(),
           '/profile': (_) => const ProfileScreen(),
-          '/partner':
-              (ctx) => PartnerViewScreen(
-                partnerUid: ModalRoute.of(ctx)!.settings.arguments as String,
-              ),
 
           '/menstrual/calendar': (_) => const CalendarScreen(),
         },

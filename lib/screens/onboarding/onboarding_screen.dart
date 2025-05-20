@@ -1,5 +1,5 @@
 // Pantalla principal del flujo de onboarding (registro inicial) de la app.
-
+// lib/screens/onboarding/onboarding_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -16,6 +16,7 @@ import 'steps/sexual_improvement_step.dart';
 import 'steps/desire_fluctuation_step.dart';
 import 'steps/last_period_step.dart';
 import 'steps/period_length_step.dart';
+import 'steps/name_step.dart';
 
 // Widget principal de la pantalla de onboarding.
 class OnboardingScreen extends StatefulWidget {
@@ -34,6 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   // Lista de los widgets de cada paso del onboarding.
   final _pages = const [
+    NameStep(),
     BirthYearStep(),
     TrackingReasonStep(),
     PeriodFeelingStep(),
@@ -48,6 +50,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   // Lista de validadores para cada paso, usando el provider.
   late final List<bool Function(OnboardingProvider)> _validators = [
+    (prov) => prov.data.displayName != null,
     (prov) => prov.data.birthYear != null,
     (prov) => prov.data.trackingReason != null,
     (prov) => prov.data.periodFeeling != null,

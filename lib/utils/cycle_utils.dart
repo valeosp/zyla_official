@@ -12,7 +12,7 @@ Color colorForPhase(String phase) {
       return const Color.fromARGB(255, 119, 232, 255);
     case 'folicular':
     default:
-      return const Color.fromARGB(203, 158, 158, 158);
+      return const Color.fromARGB(190, 255, 208, 40);
   }
 }
 

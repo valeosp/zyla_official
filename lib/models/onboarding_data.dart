@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OnboardingData {
+  String? displayName;
   int? birthYear;
   String? trackingReason;
   String? periodFeeling;
@@ -17,6 +18,7 @@ class OnboardingData {
   int? periodLength;
 
   OnboardingData({
+    this.displayName,
     this.birthYear,
     this.trackingReason,
     this.periodFeeling,
@@ -32,6 +34,7 @@ class OnboardingData {
   /// Convierte los datos en un mapa para Firestore
   Map<String, dynamic> toMap() {
     return {
+      'displayName': displayName,
       'birthYear': birthYear,
       'trackingReason': trackingReason,
       'periodFeeling': periodFeeling,
@@ -49,6 +52,7 @@ class OnboardingData {
   /// Crea una instancia a partir de un mapa de Firestore
   factory OnboardingData.fromMap(Map<String, dynamic> map) {
     return OnboardingData(
+      displayName: map['displayName'] as String?,
       birthYear: map['birthYear'] as int?,
       trackingReason: map['trackingReason'] as String?,
       periodFeeling: map['periodFeeling'] as String?,
