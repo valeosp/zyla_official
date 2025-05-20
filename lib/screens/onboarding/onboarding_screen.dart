@@ -18,6 +18,12 @@ import 'steps/last_period_step.dart';
 import 'steps/period_length_step.dart';
 import 'steps/name_step.dart';
 
+// Define el color principal rosa para toda la aplicación
+const Color zylaMainColor = Color(0xFFFFC6C3);
+const Color zylaAccentColor = Color(0xFFFF8A85);
+const Color zylaBackgroundColor = Color(0xFFFFF5F5);
+const Color zylaTextColor = Color(0xFF4A4A4A);
+
 // Widget principal de la pantalla de onboarding.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -98,39 +104,82 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final canGoNext = _validators[_currentPage](provider);
 
     return Scaffold(
-      // Barra superior con el título y botón de retroceso si no es la primera página.
+      backgroundColor: zylaBackgroundColor,
+      // Barra superior elegante con indicador de progreso
       appBar: AppBar(
-        title: Text('Paso ${_currentPage + 1} de ${_pages.length}'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading:
             _currentPage > 0
                 ? IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_rounded,
+                    color: zylaAccentColor,
+                  ),
                   onPressed: _prevPage,
                 )
                 : null,
+        actions: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Text(
+                '${_currentPage + 1}/${_pages.length}',
+                style: const TextStyle(
+                  color: zylaTextColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      // Cuerpo principal: PageView para mostrar los pasos, sin scroll manual.
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (index) => setState(() => _currentPage = index),
-        children: _pages,
+      // Indicador de progreso visual en la parte superior
+      body: Column(
+        children: [
+          // Indicador de progreso lineal
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: LinearProgressIndicator(
+              value: (_currentPage + 1) / _pages.length,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: const AlwaysStoppedAnimation<Color>(zylaAccentColor),
+              minHeight: 4,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // PageView para mostrar los pasos, sin scroll manual.
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) => setState(() => _currentPage = index),
+              children: _pages,
+            ),
+          ),
+        ],
       ),
       // Botón inferior para avanzar o finalizar, solo habilitado si el paso es válido.
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: ElevatedButton(
             onPressed: canGoNext ? _nextPage : null,
             style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: zylaAccentColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
               ),
+              elevation: 2,
+              shadowColor: zylaAccentColor.withOpacity(0.5),
+              disabledBackgroundColor: zylaMainColor.withOpacity(0.5),
             ),
             child: Text(
               _currentPage < _pages.length - 1 ? 'Siguiente' : 'Finalizar',
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ),

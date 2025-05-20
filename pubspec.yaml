@@ -87,6 +87,7 @@ flutter:
     - assets/tips/mental2.jpg
     - assets/tips/intima1.jpg
     - assets/tips/intima2.jpg
+    - assets/images/girl-power-reproductive-system-concept.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

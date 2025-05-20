@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/onboarding_data.dart';
 import '../services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class OnboardingProvider with ChangeNotifier {
   final OnboardingData _data = OnboardingData();
@@ -79,13 +80,21 @@ class OnboardingProvider with ChangeNotifier {
 
   /// Persiste datos de onboarding Y marca el flag en el perfil de usuario
   Future<void> submitOnboarding(String uid) async {
-    // 1) Guarda los datos de onboarding (colección “onboarding”)
+    // 1) Guarda los datos en la colección “onboarding”
     await _firestore.saveOnboardingData(uid, _data);
 
-    // 2) Marca en users/{uid} que ya completó el onboarding
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+    // 2) Marca en users/{uid} que completó el onboarding
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      if (_data.displayName != null && _data.displayName!.trim().isNotEmpty)
+        'displayName': _data.displayName!.trim(),
       'onboardingComplete': true,
-    });
+    }, SetOptions(merge: true));
+
+    // **3) Actualiza el perfil de FirebaseAuth**
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && _data.displayName != null) {
+      await user.updateDisplayName(_data.displayName!.trim());
+    }
 
     // 3) Actualiza estado local
     _completed = true;

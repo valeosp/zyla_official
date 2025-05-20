@@ -558,38 +558,166 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
 
               // Cerrar sesión
+
+              // Reemplaza el diálogo de cierre de sesión actual con este diseño personalizado
               _buildProfileOption(
                 icon: CupertinoIcons.square_arrow_left,
                 title: 'Cerrar sesión',
                 onTap: () {
-                  showCupertinoDialog(
+                  // Mostrar diálogo personalizado con tonos pastel rosa y azul
+                  showDialog(
                     context: context,
                     builder:
-                        (context) => CupertinoAlertDialog(
-                          title: const Text('Cerrar sesión'),
-                          content: const Text(
-                            '¿Estás segura de que deseas cerrar sesión?',
+                        (context) => Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
                           ),
-                          actions: [
-                            CupertinoDialogAction(
-                              isDestructiveAction: true,
-                              onPressed: () async {
-                                Navigator.pop(context);
-                                await auth.signOut();
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context,
-                                  '/welcome',
-                                  (route) => false,
-                                );
-                              },
-                              child: const Text('Cerrar sesión'),
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(0xFFFFF0F5), // Rosa muy pálido
+                                  const Color(0xFFE6F0FF), // Azul muy pálido
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _primaryColor.withOpacity(0.3),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
                             ),
-                            CupertinoDialogAction(
-                              isDefaultAction: true,
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancelar'),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Icono decorativo en un círculo
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        const Color(0xFFFFC2C7), // Rosa pastel
+                                        const Color(0xFFB5E8FF), // Azul pastel
+                                      ],
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    CupertinoIcons.square_arrow_left,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Título con estilo
+                                Text(
+                                  'Cerrar sesión',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w600,
+                                    color: _textColor,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Mensaje
+                                Text(
+                                  '¿Estás segura de que deseas cerrar sesión?',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: _textColor.withOpacity(0.8),
+                                  ),
+                                ),
+                                const SizedBox(height: 30),
+
+                                // Botones con estilo personalizado
+                                Row(
+                                  children: [
+                                    // Botón Cancelar
+                                    Expanded(
+                                      child: TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 15,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                            side: BorderSide(
+                                              color: _primaryColor.withOpacity(
+                                                0.5,
+                                              ),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Cancelar',
+                                          style: TextStyle(
+                                            color: _textColor,
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+
+                                    // Botón Cerrar Sesión
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          Navigator.pop(context);
+                                          await auth.signOut();
+                                          Navigator.pushNamedAndRemoveUntil(
+                                            context,
+                                            '/welcome',
+                                            (route) => false,
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 15,
+                                          ),
+                                          backgroundColor: const Color(
+                                            0xFFFFC2C7,
+                                          ), // Rosa pastel
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Cerrar sesión',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                   );
                 },
