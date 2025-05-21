@@ -1,6 +1,6 @@
-# zyla
+# 🌸 ZYLA
 
-A new Flutter project.
+Zayla Flutter project, tu aplicación de predicción y seguimiento de periodo menstrual  🩷.
 
 ## Getting Started
 
